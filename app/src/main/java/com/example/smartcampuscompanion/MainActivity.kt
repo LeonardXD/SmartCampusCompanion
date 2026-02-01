@@ -14,10 +14,13 @@ import com.example.smartcampuscompanion.navigation.SetupNavGraph
 import com.example.smartcampuscompanion.ui.theme.SmartCampusCompanionTheme
 import com.example.smartcampuscompanion.utils.SessionManager
 
+/**
+ * Main Activity class.
+ * Sets the content to SmartCampusApp which handles the rest of the navigation logic.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             SmartCampusCompanionTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
