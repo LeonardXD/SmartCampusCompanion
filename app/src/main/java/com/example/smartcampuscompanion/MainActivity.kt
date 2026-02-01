@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import com.example.smartcampuscompanion.app.SmartCampusApp
+import com.example.smartcampuscompanion.ui.theme.SmartCampusCompanionTheme
 
 /**
  * Main Activity class.
@@ -14,7 +15,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            SmartCampusCompanionTheme {
                 SmartCampusApp()
             }
         }
