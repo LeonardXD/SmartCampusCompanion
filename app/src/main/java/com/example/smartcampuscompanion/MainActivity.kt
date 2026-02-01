@@ -7,10 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.smartcampuscompanion.features.dashboard.DashboardScreen
+import com.example.smartcampuscompanion.features.campusinfo.CampusInfoScreen
 import com.example.smartcampuscompanion.ui.theme.SmartCampusCompanionTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +22,27 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SmartCampusCompanionTheme {
+
+                val navController = rememberNavController()
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+
+                    NavHost(
+                        navController = navController,
+                        startDestination = "dashboard",
                         modifier = Modifier.padding(innerPadding)
-                    )
+                    ) {
+
+                        composable("dashboard") {
+                            DashboardScreen(navController)
+                        }
+
+                        composable("campusInfo") {
+                            CampusInfoScreen()
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SmartCampusCompanionTheme {
-        Greeting("Android")
     }
 }
