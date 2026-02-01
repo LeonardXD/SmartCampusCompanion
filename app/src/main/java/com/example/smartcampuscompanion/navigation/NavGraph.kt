@@ -1,3 +1,4 @@
+// smartcampuscompanion/navigation/NavGraph.kt
 package com.example.smartcampuscompanion.navigation
 
 import androidx.compose.runtime.Composable
@@ -12,7 +13,7 @@ import com.example.smartcampuscompanion.features.dashboard.DashboardScreen
 import com.example.smartcampuscompanion.utils.SessionManager
 
 @Composable
-fun SetupNavGraph(
+fun NavGraph(
     navController: NavHostController,
     startDestination: String,
     sessionManager: SessionManager,
@@ -23,37 +24,37 @@ fun SetupNavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(route = AppRoutes.LOGIN) {
+        // Login Route
+        composable(AppRoutes.LOGIN) {
             LoginScreen(
-                onLoginSuccess = {
+                onLoginSuccess = { username ->
+                    sessionManager.saveSession(username)
                     navController.navigate(AppRoutes.DASHBOARD) {
-                        // Pop up to the start destination of the graph to clear the login screen from the back stack
-                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                        launchSingleTop = true
+                        popUpTo(AppRoutes.LOGIN) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(route = AppRoutes.DASHBOARD) {
+        // Dashboard Route
+        composable(AppRoutes.DASHBOARD) {
+            val username = sessionManager.getUsername() ?: "Student"
             DashboardScreen(
-                onNavigateToCampusInfo = {
-                    navController.navigate(AppRoutes.CAMPUS_INFO)
-                },
+                username = username,
+                onNavigateToCampusInfo = { navController.navigate(AppRoutes.CAMPUS_INFO) },
                 onLogout = {
                     sessionManager.clearSession()
                     navController.navigate(AppRoutes.LOGIN) {
-                        // Pop up to the start destination of the graph to clear the entire back stack
-                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                        launchSingleTop = true
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(route = AppRoutes.CAMPUS_INFO) {
+        // Campus Info Route
+        composable(AppRoutes.CAMPUS_INFO) {
             CampusInfoScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.navigateUp() }
             )
         }
     }
