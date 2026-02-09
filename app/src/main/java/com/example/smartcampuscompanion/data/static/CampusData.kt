@@ -1,6 +1,6 @@
 package com.example.smartcampuscompanion.data.static
 
-import com.example.smartcampuscompanion.data.model.Department
+import com.example.smartcampuscompanion.domain.model.Department
 
 object CampusData {
     val departments = listOf(
