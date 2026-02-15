@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanion.features.announcements.viewmodel.*
@@ -13,32 +14,78 @@ import com.example.smartcampuscompanion.features.announcements.viewmodel.*
 fun AnnouncementScreen(viewModel: AnnouncementViewModel) {
 
     val state by viewModel.uiState.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
 
-    when (state) {
-        AnnouncementUiState.Loading -> CircularProgressIndicator()
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showDialog = true }) {
+                Text("+")
+            }
+        }
+    ) { padding ->
 
-        AnnouncementUiState.Empty -> Text("No announcements")
+        Box(modifier = Modifier.padding(padding)) {
 
-        is AnnouncementUiState.Success -> {
-            val list = (state as AnnouncementUiState.Success).announcements
+            when (state) {
 
-            Column {
-                Button(onClick = { viewModel.addAnnouncement("Sample", "Hello Campus") }) {
-                    Text("Add")
+                AnnouncementUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
 
-                LazyColumn {
-                    items(list) { ann ->
+                AnnouncementUiState.Empty -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No announcements yet")
+                    }
+                }
+
+                is AnnouncementUiState.Success -> {
+                    val list = (state as AnnouncementUiState.Success).announcements
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(list) { ann ->
+                            AnnouncementItem(
+                                announcement = ann,
+                                onDelete = { viewModel.deleteAnnouncement(ann.id) }
+                            )
+                        }
+                    }
+                }
+
+                is AnnouncementUiState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
-                            text = ann.title,
-                            modifier = Modifier.padding(16.dp)
+                            text = "Error loading announcements. Try again.",
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
                 }
             }
-        }
 
-        is AnnouncementUiState.Error -> Text("Error loading announcements")
+            // Dialog for creating announcement
+            if (showDialog) {
+                CreateAnnouncementDialog(
+                    onDismiss = { showDialog = false },
+                    onCreate = { title, desc ->
+                        viewModel.createAnnouncement(title, desc)
+                        showDialog = false
+                    }
+                )
+            }
+        }
     }
 }
-
