@@ -9,6 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.smartcampuscompanion.features.announcements.components.AnnouncementCard
+import com.example.smartcampuscompanion.features.announcements.components.CreateAnnouncementDialog
+import com.example.smartcampuscompanion.features.announcements.components.ErrorBoundary
+import com.example.smartcampuscompanion.features.announcements.components.ErrorFallback
 import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementViewModel
 import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementUiState
 
@@ -48,13 +52,11 @@ fun AnnouncementScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(list) { announcement ->
-                            AnnouncementItem(
-                                title = announcement.title,
-                                description = announcement.description,
-                                date = announcement.date,
-                                author = announcement.author,
-                                onDeleteClick = { viewModel.deleteAnnouncement(announcement.id) }
+                        items(list, key = { it.id }) { announcement ->
+                            AnnouncementCard(
+                                announcement = announcement,
+                                onDelete = { viewModel.deleteAnnouncement(it) },
+                                onClick = { /* Optional: navigate to detail */ }
                             )
                         }
                     }
@@ -69,7 +71,7 @@ fun AnnouncementScreen(
                 }
             }
 
-            // Modal dialog for creating announcement
+            
             CreateAnnouncementDialog(
                 onSubmit = { title, description ->
                     viewModel.createAnnouncement(title, description)
