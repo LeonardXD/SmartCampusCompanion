@@ -3,42 +3,56 @@ package com.example.smartcampuscompanion.features.announcements.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smartcampuscompanion.data.repository.AnnouncementRepository
-import com.example.smartcampuscompanion.domain.model.Announcement
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class AnnouncementViewModel(
     private val repository: AnnouncementRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<AnnouncementUiState> =
-        repository.getAnnouncements()
-            .map { list ->
-                if (list.isEmpty()) AnnouncementUiState.Empty
-                else AnnouncementUiState.Success(list)
+    private val _uiState = MutableStateFlow<AnnouncementUiState>(AnnouncementUiState.Loading)
+    val uiState: StateFlow<AnnouncementUiState> = _uiState
+
+    init {
+        loadAnnouncements()
+    }
+
+    fun loadAnnouncements() {
+        viewModelScope.launch {
+            _uiState.value = AnnouncementUiState.Loading
+            try {
+                val data = repository.getAllAnnouncements()
+                _uiState.value =
+                    if (data.isEmpty()) AnnouncementUiState.Empty
+                    else AnnouncementUiState.Success(data)
+            } catch (e: Exception) {
+                _uiState.value = AnnouncementUiState.Error(e.message ?: "Unknown error")
             }
-            .catch { emit(AnnouncementUiState.Error("Failed to load")) }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AnnouncementUiState.Loading)
-
-    fun addAnnouncement(title: String, content: String) {
-        viewModelScope.launch {
-            repository.addAnnouncement(
-                Announcement(
-                    id = 0,
-                    title = title,
-                    content = content,
-                    category = "General",
-                    isImportant = false,
-                    createdAt = System.currentTimeMillis()
-                )
-            )
         }
     }
 
-    fun deleteAnnouncement(announcement: Announcement) {
+    fun createAnnouncement(title: String, description: String) {
         viewModelScope.launch {
-            repository.deleteAnnouncement(announcement)
+            try {
+                repository.addAnnouncement(title, description)
+                loadAnnouncements()
+            } catch (e: Exception) {
+                _uiState.value = AnnouncementUiState.Error("Failed to create announcement")
+            }
         }
     }
+
+    fun deleteAnnouncement(id: Int) {
+        viewModelScope.launch {
+            try {
+                repository.deleteAnnouncement(id)
+                loadAnnouncements()
+            } catch (e: Exception) {
+                _uiState.value = AnnouncementUiState.Error("Failed to delete announcement")
+            }
+        }
+    }
+
+    fun retry() = loadAnnouncements()
 }
-
