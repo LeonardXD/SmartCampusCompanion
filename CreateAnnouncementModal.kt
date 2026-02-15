@@ -1,40 +1,25 @@
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+package com.example.smartcampuscompanion.features.announcements.components
+
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.icons.Icons
+import androidx.compose.material3.icons.filled.Check
+import androidx.compose.material3.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.myapplication.R
-import androidx.compose.material3.icons.Icons
-import androidx.compose.material3.icons.filled.Check
-import androidx.compose.material3.icons.filled.Close
-import androidx.compose.material3.icons.filled.Error
-import androidx.compose.material3.icons.filled.Info
-import androidx.compose.material3.icons.filled.Notifications
-import androidx.compose.ui.text.input.TextFieldValue
-import com.example.myapplication.ui.theme.Colors
+import com.example.smartcampuscompanion.domain.model.Announcement
 
 val CATEGORIES = listOf("General", "Academic", "Events", "Emergency")
-
-data class Announcement(
-    val title: String,
-    val content: String,
-    val category: String,
-    val isImportant: Boolean
-)
 
 @Composable
 fun CreateAnnouncementModal(
@@ -62,6 +47,7 @@ fun CreateAnnouncementModal(
                     .background(Color.White, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                     .padding(16.dp)
             ) {
+
                 // Modal Header
                 Row(
                     modifier = Modifier
@@ -136,7 +122,7 @@ fun CreateAnnouncementModal(
                     maxLines = 4
                 )
 
-                // Category Selector
+               
                 Text("Category", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 16.dp))
                 Row(
                     modifier = Modifier
@@ -147,9 +133,7 @@ fun CreateAnnouncementModal(
                 ) {
                     CATEGORIES.forEach { cat ->
                         Button(
-                            onClick = {
-                                category = cat
-                            },
+                            onClick = { category = cat },
                             modifier = Modifier.padding(end = 8.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (category == cat) Color.Gray else Color.Transparent
@@ -160,7 +144,7 @@ fun CreateAnnouncementModal(
                     }
                 }
 
-                // Important Switch
+                
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -185,17 +169,5 @@ fun CreateAnnouncementModal(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun PreviewCreateAnnouncementModal() {
-    MyApplicationTheme {
-        CreateAnnouncementModal(
-            visible = true,
-            onClose = {},
-            onCreate = {}
-        )
     }
 }
