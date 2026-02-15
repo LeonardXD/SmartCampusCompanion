@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+
 class AnnouncementViewModel(
     private val repository: AnnouncementRepository
 ) : ViewModel() {
@@ -18,6 +19,7 @@ class AnnouncementViewModel(
         loadAnnouncements()
     }
 
+    /** Load all announcements from repository */
     fun loadAnnouncements() {
         viewModelScope.launch {
             _uiState.value = AnnouncementUiState.Loading
@@ -34,17 +36,19 @@ class AnnouncementViewModel(
         }
     }
 
+    /** Create a new announcement and reload */
     fun createAnnouncement(title: String, description: String) {
         viewModelScope.launch {
             try {
                 repository.addAnnouncement(title, description)
-                loadAnnouncements() // reload after create
+                loadAnnouncements()
             } catch (e: Exception) {
                 _uiState.value = AnnouncementUiState.Error(e.message ?: "Failed to create")
             }
         }
     }
 
+   
     fun deleteAnnouncement(id: Long) {
         viewModelScope.launch {
             try {
@@ -56,6 +60,7 @@ class AnnouncementViewModel(
         }
     }
 
+    
     fun retry() {
         loadAnnouncements()
     }
