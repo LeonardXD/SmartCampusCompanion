@@ -1,29 +1,33 @@
-package com.example.app.di
+package com.example.smartcampuscompanion.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.app.data.AppDatabase
-import com.example.app.data.UserDao
-import com.example.app.repository.UserRepository
+import com.example.smartcampuscompanion.data.local.AppDatabase
+import com.example.smartcampuscompanion.data.local.dao.TaskDao
+import com.example.smartcampuscompanion.data.repository.TaskRepositoryImpl
+import com.example.smartcampuscompanion.domain.repository.TaskRepository
 
 object AppModule {
 
-    // Provide Room Database
+    private var database: AppDatabase? = null
+
     fun provideDatabase(context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context.applicationContext,
-            AppDatabase::class.java,
-            "app_database"
-        ).build()
+        return database ?: synchronized(this) {
+            val instance = Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                "task_database"
+            ).build()
+            database = instance
+            instance
+        }
     }
 
-    // Provide DAO
-    fun provideUserDao(database: AppDatabase): UserDao {
-        return database.userDao()
+    fun provideTaskDao(database: AppDatabase): TaskDao {
+        return database.taskDao
     }
 
-    // Provide Repository
-    fun provideUserRepository(userDao: UserDao): UserRepository {
-        return UserRepository(userDao)
+    fun provideTaskRepository(taskDao: TaskDao): TaskRepository {
+        return TaskRepositoryImpl(taskDao)
     }
 }
