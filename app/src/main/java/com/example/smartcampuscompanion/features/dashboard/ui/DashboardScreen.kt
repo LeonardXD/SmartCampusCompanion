@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.smartcampuscompanion.ui.components.AppTopBar
-import com.example.smartcampuscompanion.ui.components.PrimaryButton
+import com.example.smartcampuscompanion.core.ui.components.AppTopBar
+import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
 
 @Composable
 fun DashboardScreen(
