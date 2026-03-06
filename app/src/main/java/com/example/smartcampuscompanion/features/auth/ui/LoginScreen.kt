@@ -11,19 +11,17 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.smartcampuscompanion.ui.components.PrimaryButton
+import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
 import com.example.smartcampuscompanion.core.utils.Constants
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(onLoginSuccess: (String) -> Unit) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     var username by rememberSaveable { mutableStateOf("") }

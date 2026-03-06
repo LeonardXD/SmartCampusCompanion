@@ -16,7 +16,7 @@ fun NavGraphBuilder.taskManagerGraph(
         val database = AppModule.provideDatabase(context)
         val dao = AppModule.provideTaskDao(database)
         val repository = AppModule.provideTaskRepository(dao)
-        val factory = ViewModelFactory(repository)
+        val factory = ViewModelFactory { TaskViewModel(repository) }
         
         val viewModel: TaskViewModel = viewModel(factory = factory)
         TaskScreen(viewModel = viewModel)
