@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class TaskViewModel(
-    private val repository: TaskRepository
+    private val repository: TaskRepository,
+    private val currentUsername: String
 ) : ViewModel() {
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
@@ -22,7 +23,7 @@ class TaskViewModel(
 
     private fun getTasks() {
         viewModelScope.launch {
-            repository.getAllTasks().collect { taskList ->
+            repository.getAllTasks(currentUsername).collect { taskList ->
                 _tasks.value = taskList
             }
         }
@@ -32,6 +33,7 @@ class TaskViewModel(
         viewModelScope.launch {
             repository.insertTask(
                 Task(
+                    ownerUsername = currentUsername,
                     title = title,
                     description = description,
                     dueDate = dueDate

@@ -2,10 +2,11 @@ package com.example.smartcampuscompanion.features.auth.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.smartcampuscompanion.core.utils.Constants
 
 /**
- * Manages authentication state and mock validation.
- * Designed for PRELIM requirements (Local Mock Auth).
+ * Manages authentication state.
+ * Legacy helper kept for compatibility with older calls.
  */
 class AuthManager(context: Context) {
 
@@ -15,9 +16,6 @@ class AuthManager(context: Context) {
         const val KEY_IS_LOGGED_IN = "is_logged_in"
         const val KEY_USERNAME = "username"
 
-        // MOCK CREDENTIALS
-        const val MOCK_USER = "student"
-        const val MOCK_PASS = "password123"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -28,16 +26,14 @@ class AuthManager(context: Context) {
     data class AuthResult(val success: Boolean, val message: String)
 
     /**
-     * Validates credentials against hardcoded mock data.
-     * If valid, saves the session.
+     * Validates admin credentials.
      */
     fun login(username: String, password: String): AuthResult {
         if (username.isBlank() || password.isBlank()) {
             return AuthResult(false, "Please enter both username and password.")
         }
 
-        // Mock Validation Logic
-        return if (username == MOCK_USER && password == MOCK_PASS) {
+        return if (username == Constants.ADMIN_USERNAME && password == Constants.ADMIN_PASSWORD) {
             saveSession(username)
             AuthResult(true, "Login Successful")
         } else {

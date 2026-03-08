@@ -31,7 +31,9 @@ import com.example.smartcampuscompanion.domain.model.Announcement
 fun AnnouncementItem(
     announcement: Announcement,
     onMarkAsRead: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    canMarkAsRead: Boolean,
+    canDelete: Boolean
 ) {
     val categoryColor = when (announcement.category) {
         "Academic" -> Color(0xFF1565C0)
@@ -108,17 +110,19 @@ fun AnnouncementItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (!announcement.isRead) {
-                    TextButton(onClick = onMarkAsRead) {
-                        Icon(
-                            imageVector = Icons.Default.Done,
-                            contentDescription = "Mark as read",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Read",
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
+                    if (canMarkAsRead) {
+                        TextButton(onClick = onMarkAsRead) {
+                            Icon(
+                                imageVector = Icons.Default.Done,
+                                contentDescription = "Mark as read",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Read",
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
                     }
                 } else {
                     Text(
@@ -129,12 +133,14 @@ fun AnnouncementItem(
                     )
                 }
 
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete announcement",
-                        tint = Color.Gray
-                    )
+                if (canDelete) {
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete announcement",
+                            tint = Color.Gray
+                        )
+                    }
                 }
             }
         }

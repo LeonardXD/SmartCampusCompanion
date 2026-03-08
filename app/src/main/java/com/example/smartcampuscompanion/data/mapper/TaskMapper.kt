@@ -6,6 +6,7 @@ import com.example.smartcampuscompanion.domain.model.Task
 fun TaskEntity.toDomain(): Task {
     return Task(
         id = id,
+        ownerUsername = ownerUsername,
         title = title,
         description = description,
         isCompleted = isCompleted,
@@ -16,6 +17,7 @@ fun TaskEntity.toDomain(): Task {
 fun Task.toEntity(): TaskEntity {
     return TaskEntity(
         id = id,
+        ownerUsername = ownerUsername,
         title = title,
         description = description,
         isCompleted = isCompleted,

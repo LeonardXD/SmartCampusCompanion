@@ -10,20 +10,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanion.core.ui.components.AppTopBar
-import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
 
 @Composable
 fun DashboardScreen(
     username: String,
-    onNavigateToCampusInfo: () -> Unit,
-    onNavigateToTaskManager: () -> Unit,
-    onNavigateToAnnouncements: () -> Unit,
     onLogout: () -> Unit
 ) {
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Dashboard",
+                title = "Home",
                 actions = {
                     IconButton(onClick = onLogout) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout")
@@ -58,31 +54,6 @@ fun DashboardScreen(
                     )
                 }
             }
-
-            Text(
-                text = "Menu",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
-            )
-
-            PrimaryButton(
-                text = "View Campus Info",
-                onClick = onNavigateToCampusInfo
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PrimaryButton(
-                text = "Task Manager",
-                onClick = onNavigateToTaskManager
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PrimaryButton(
-                text = "Announcements",
-                onClick = onNavigateToAnnouncements
-            )
         }
     }
 }

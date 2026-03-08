@@ -12,13 +12,13 @@ import com.example.smartcampuscompanion.data.static.CampusData
 import com.example.smartcampuscompanion.core.ui.components.AppTopBar
 
 @Composable
-fun CampusInfoScreen(onBack: () -> Unit) {
+fun CampusInfoScreen(onBack: (() -> Unit)? = null) {
     Scaffold(
         topBar = {
             AppTopBar(
                 title = "Campus Info",
-                canNavigateBack = true,
-                navigateUp = onBack
+                canNavigateBack = onBack != null,
+                navigateUp = { onBack?.invoke() }
             )
         }
     ) { padding ->

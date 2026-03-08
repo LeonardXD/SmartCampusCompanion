@@ -13,11 +13,7 @@ object Constants {
     const val KEY_USERNAME = "username"
     const val KEY_USER_ROLE = "user_role"
 
-    // Mock Credentials (Hardcoded for prelim requirements)
-    const val MOCK_USERNAME = "student"
-    const val MOCK_PASSWORD = "password123"
-
-    // Optional: Mock Admin Credentials
-    const val MOCK_ADMIN_USER = "admin"
-    const val MOCK_ADMIN_PASS = "admin123"
+    // Default Admin Credentials
+    const val ADMIN_USERNAME = "admin"
+    const val ADMIN_PASSWORD = "admin"
 }

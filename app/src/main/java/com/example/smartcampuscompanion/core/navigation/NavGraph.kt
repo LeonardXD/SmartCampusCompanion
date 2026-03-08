@@ -17,8 +17,11 @@ import com.example.smartcampuscompanion.features.announcements.viewmodel.Announc
 import com.example.smartcampuscompanion.features.campusinfo.ui.CampusInfoScreen
 import com.example.smartcampuscompanion.features.dashboard.ui.DashboardScreen
 import com.example.smartcampuscompanion.features.auth.data.SessionManager
+import com.example.smartcampuscompanion.features.settings.ui.SettingsScreen
 import com.example.smartcampuscompanion.features.taskmanager.TaskScreen
 import com.example.smartcampuscompanion.features.taskmanager.TaskViewModel
+import com.example.smartcampuscompanion.features.auth.ui.RegisterScreen
+import com.example.smartcampuscompanion.core.utils.Constants
 
 @Composable
 fun NavGraph(
@@ -36,22 +39,37 @@ fun NavGraph(
         composable(AppRoutes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = { username ->
-                    sessionManager.saveSession(username)
-                    navController.navigate(AppRoutes.DASHBOARD) {
+                    val role = if (username == Constants.ADMIN_USERNAME) "Admin" else "Student"
+                    sessionManager.saveSession(username, role)
+                    val destination = if (role == "Admin") {
+                        AppRoutes.ANNOUNCEMENTS
+                    } else {
+                        AppRoutes.DASHBOARD
+                    }
+                    navController.navigate(destination) {
                         popUpTo(AppRoutes.LOGIN) { inclusive = true }
                     }
+                },
+                onRegisterClick = {
+                    navController.navigate(AppRoutes.REGISTER)
                 }
             )
         }
 
+        composable(AppRoutes.REGISTER) {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.popBackStack()
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         // Dashboard Route
-        composable(AppRoutes.DASHBOARD) {
+        composable(AppRoutes.HOME) {
             val username = sessionManager.getUsername() ?: "Student"
             DashboardScreen(
                 username = username,
-                onNavigateToCampusInfo = { navController.navigate(AppRoutes.CAMPUS_INFO) },
-                onNavigateToTaskManager = { navController.navigate(AppRoutes.TASK_MANAGER) },
-                onNavigateToAnnouncements = { navController.navigate(AppRoutes.ANNOUNCEMENTS) },
                 onLogout = {
                     sessionManager.clearSession()
                     navController.navigate(AppRoutes.LOGIN) {
@@ -63,17 +81,18 @@ fun NavGraph(
 
         // Campus Info Route
         composable(AppRoutes.CAMPUS_INFO) {
-            CampusInfoScreen(
-                onBack = { navController.navigateUp() }
-            )
+            CampusInfoScreen()
         }
 
-        composable(AppRoutes.TASK_MANAGER) {
+        composable(AppRoutes.TASKS) {
             val context = LocalContext.current
             val database = remember(context) { AppModule.provideDatabase(context) }
             val dao = remember(database) { AppModule.provideTaskDao(database) }
             val repository = remember(dao) { AppModule.provideTaskRepository(dao) }
-            val factory = remember(repository) { ViewModelFactory { TaskViewModel(repository) } }
+            val username = sessionManager.getUsername() ?: ""
+            val factory = remember(repository, username) {
+                ViewModelFactory { TaskViewModel(repository, username) }
+            }
             val taskViewModel: TaskViewModel = viewModel(factory = factory)
             TaskScreen(viewModel = taskViewModel)
         }
@@ -85,7 +104,27 @@ fun NavGraph(
             val repository = remember(dao) { AppModule.provideAnnouncementRepository(dao) }
             val factory = remember(repository) { ViewModelFactory { AnnouncementViewModel(repository) } }
             val announcementViewModel: AnnouncementViewModel = viewModel(factory = factory)
-            AnnouncementScreen(viewModel = announcementViewModel)
+            val isAdmin = sessionManager.getRole() == "Admin"
+            AnnouncementScreen(
+                viewModel = announcementViewModel,
+                canCreate = isAdmin,
+                canMarkAsRead = !isAdmin,
+                canDelete = isAdmin,
+                onLogout = if (isAdmin) {
+                    {
+                        sessionManager.clearSession()
+                        navController.navigate(AppRoutes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                } else {
+                    null
+                }
+            )
+        }
+
+        composable(AppRoutes.SETTINGS) {
+            SettingsScreen()
         }
     }
 }

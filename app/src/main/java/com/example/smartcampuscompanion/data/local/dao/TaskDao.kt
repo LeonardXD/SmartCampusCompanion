@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
 
-    @Query("SELECT * FROM tasks ORDER BY id DESC")
-    fun getAllTasks(): Flow<List<TaskEntity>>
+    @Query("SELECT * FROM tasks WHERE ownerUsername = :ownerUsername ORDER BY id DESC")
+    fun getAllTasks(ownerUsername: String): Flow<List<TaskEntity>>
 
-    @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")
-    suspend fun getTaskById(id: Int): TaskEntity?
+    @Query("SELECT * FROM tasks WHERE id = :id AND ownerUsername = :ownerUsername LIMIT 1")
+    suspend fun getTaskById(id: Int, ownerUsername: String): TaskEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: TaskEntity)

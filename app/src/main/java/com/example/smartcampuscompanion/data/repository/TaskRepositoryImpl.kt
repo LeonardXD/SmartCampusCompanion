@@ -12,14 +12,14 @@ class TaskRepositoryImpl(
     private val dao: TaskDao
 ) : TaskRepository {
 
-    override fun getAllTasks(): Flow<List<Task>> {
-        return dao.getAllTasks().map { entities ->
+    override fun getAllTasks(ownerUsername: String): Flow<List<Task>> {
+        return dao.getAllTasks(ownerUsername).map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    override suspend fun getTaskById(id: Int): Task? {
-        return dao.getTaskById(id)?.toDomain()
+    override suspend fun getTaskById(id: Int, ownerUsername: String): Task? {
+        return dao.getTaskById(id, ownerUsername)?.toDomain()
     }
 
     override suspend fun insertTask(task: Task) {

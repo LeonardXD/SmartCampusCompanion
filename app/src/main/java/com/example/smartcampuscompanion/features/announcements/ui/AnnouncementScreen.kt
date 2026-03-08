@@ -11,11 +11,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,15 +38,37 @@ import com.example.smartcampuscompanion.features.announcements.viewmodel.Announc
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnnouncementScreen(viewModel: AnnouncementViewModel) {
+fun AnnouncementScreen(
+    viewModel: AnnouncementViewModel,
+    canCreate: Boolean,
+    canMarkAsRead: Boolean,
+    canDelete: Boolean,
+    onLogout: (() -> Unit)? = null
+) {
     val state by viewModel.uiState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Announcements") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Announcements") },
+                actions = {
+                    if (onLogout != null) {
+                        IconButton(onClick = onLogout) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "Logout"
+                            )
+                        }
+                    }
+                }
+            )
+        },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "New Announcement")
+            if (canCreate) {
+                FloatingActionButton(onClick = { showDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "New Announcement")
+                }
             }
         }
     ) { padding ->
@@ -94,14 +118,16 @@ fun AnnouncementScreen(viewModel: AnnouncementViewModel) {
                         AnnouncementItem(
                             announcement = ann,
                             onMarkAsRead = { viewModel.markAnnouncementRead(ann.id) },
-                            onDelete = { viewModel.deleteAnnouncement(ann.id) }
+                            onDelete = { viewModel.deleteAnnouncement(ann.id) },
+                            canMarkAsRead = canMarkAsRead,
+                            canDelete = canDelete
                         )
                     }
                 }
             }
         }
 
-        if (showDialog) {
+        if (showDialog && canCreate) {
             CreateAnnouncementDialog(
                 onDismiss = { showDialog = false },
                 onCreate = { title, content ->
