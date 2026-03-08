@@ -3,50 +3,79 @@ package com.example.smartcampuscompanion.features.announcements.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smartcampuscompanion.data.repository.AnnouncementRepository
+import com.example.smartcampuscompanion.domain.model.Announcement
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
 
 class AnnouncementViewModel(
     private val repository: AnnouncementRepository
 ) : ViewModel() {
 
-   
     private val _uiState = MutableStateFlow<AnnouncementUiState>(AnnouncementUiState.Loading)
-    val uiState: StateFlow<AnnouncementUiState> = _uiState
+    val uiState: StateFlow<AnnouncementUiState> = _uiState.asStateFlow()
 
     init {
-        loadAnnouncements()
+        observeAnnouncements()
     }
 
-    fun loadAnnouncements() {
+    private fun observeAnnouncements() {
         viewModelScope.launch {
-            _uiState.value = AnnouncementUiState.Loading
-            try {
-                val announcements = repository.getAllAnnouncements()
+            repository.getAnnouncements().collect { announcements ->
                 _uiState.value = if (announcements.isEmpty()) {
                     AnnouncementUiState.Empty
                 } else {
                     AnnouncementUiState.Success(announcements)
                 }
-            } catch (e: Exception) {
-                _uiState.value = AnnouncementUiState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
-    /
-    fun createAnnouncement(title: String, description: String) {
+    fun createAnnouncement(title: String, content: String) {
         viewModelScope.launch {
             try {
-                repository.addAnnouncement(title, description)
-                loadAnnouncements() 
+                val announcement = Announcement(
+                    id = 0L,
+                    title = title,
+                    content = content,
+                    category = "General",
+                    isImportant = false,
+                    createdAt = System.currentTimeMillis(),
+                    isRead = false
+                )
+                repository.addAnnouncement(announcement)
             } catch (e: Exception) {
-                _uiState.value = AnnouncementUiState.Error("Failed to create announcement")
+                _uiState.value = AnnouncementUiState.Error(
+                    e.message ?: "Failed to create announcement"
+                )
             }
         }
     }
 
-    
+    fun deleteAnnouncement(id: Long) {
+        viewModelScope.launch {
+            val current = (_uiState.value as? AnnouncementUiState.Success)?.announcements ?: return@launch
+            val target = current.firstOrNull { it.id == id } ?: return@launch
+            try {
+                repository.deleteAnnouncement(target)
+            } catch (e: Exception) {
+                _uiState.value = AnnouncementUiState.Error(
+                    e.message ?: "Failed to delete announcement"
+                )
+            }
+        }
+    }
+
+    fun markAnnouncementRead(id: Long) {
+        viewModelScope.launch {
+            try {
+                repository.markAnnouncementAsRead(id)
+            } catch (e: Exception) {
+                _uiState.value = AnnouncementUiState.Error(
+                    e.message ?: "Failed to mark announcement as read"
+                )
+            }
+        }
+    }
 }

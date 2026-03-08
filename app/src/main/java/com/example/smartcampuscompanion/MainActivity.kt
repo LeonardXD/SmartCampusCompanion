@@ -3,7 +3,7 @@ package com.example.smartcampuscompanion
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.smartcampuscompanion.ui.theme.SmartCampusCompanionTheme
+import com.example.smartcampuscompanion.core.ui.theme.SmartCampusCompanionTheme
 
 /**
  * Main Activity class.

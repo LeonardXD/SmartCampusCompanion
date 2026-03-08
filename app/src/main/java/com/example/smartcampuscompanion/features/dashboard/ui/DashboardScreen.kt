@@ -16,6 +16,8 @@ import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
 fun DashboardScreen(
     username: String,
     onNavigateToCampusInfo: () -> Unit,
+    onNavigateToTaskManager: () -> Unit,
+    onNavigateToAnnouncements: () -> Unit,
     onLogout: () -> Unit
 ) {
     Scaffold(
@@ -70,14 +72,17 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Placeholder for future Midterm features (Task Manager, etc.)
-            OutlinedButton(
-                onClick = { /* TODO: Midterm Requirement */ },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                enabled = false
-            ) {
-                Text("Task Manager (Coming Soon)")
-            }
+            PrimaryButton(
+                text = "Task Manager",
+                onClick = onNavigateToTaskManager
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PrimaryButton(
+                text = "Announcements",
+                onClick = onNavigateToAnnouncements
+            )
         }
     }
 }

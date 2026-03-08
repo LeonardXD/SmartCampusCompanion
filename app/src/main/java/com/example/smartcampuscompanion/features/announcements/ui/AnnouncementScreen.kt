@@ -1,164 +1,158 @@
 package com.example.smartcampuscompanion.features.announcements.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.material3.icons.Icons
-import androidx.compose.material3.icons.filled.Add
-import androidx.compose.material3.icons.filled.Delete
-import androidx.compose.material3.icons.filled.Flag
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.smartcampuscompanion.domain.model.Announcement
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.runtime.collectAsState
 import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementUiState
 import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementViewModel
-import com.example.smartcampuscompanion.features.announcements.utils.formatDate
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnouncementScreen(viewModel: AnnouncementViewModel) {
-
     val state by viewModel.uiState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = {
-            SmallTopAppBar(title = { Text("Announcements") })
-        },
+        topBar = { TopAppBar(title = { Text("Announcements") }) },
         floatingActionButton = {
             FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Filled.Add, contentDescription = "New Announcement")
+                Icon(Icons.Default.Add, contentDescription = "New Announcement")
             }
         }
     ) { padding ->
-
-        Box(modifier = Modifier.padding(padding)) {
-
-            when (state) {
-
-                AnnouncementUiState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        when (val uiState = state) {
+            AnnouncementUiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
+            }
 
-                AnnouncementUiState.Empty -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("No announcements yet", color = Color.Gray)
-                    }
+            AnnouncementUiState.Empty -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No announcements yet")
                 }
+            }
 
-                is AnnouncementUiState.Success -> {
-                    val list = (state as AnnouncementUiState.Success).announcements
-
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(list) { ann ->
-                            AnnouncementCard(
-                                announcement = ann,
-                                onDelete = { viewModel.deleteAnnouncement(ann.id) }
-                            )
-                        }
-                    }
+            is AnnouncementUiState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(uiState.message)
                 }
+            }
 
-                is AnnouncementUiState.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Error loading announcements. Try again.",
-                            color = MaterialTheme.colorScheme.error
+            is AnnouncementUiState.Success -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentPadding = PaddingValues(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(uiState.announcements, key = { it.id }) { ann ->
+                        AnnouncementItem(
+                            announcement = ann,
+                            onMarkAsRead = { viewModel.markAnnouncementRead(ann.id) },
+                            onDelete = { viewModel.deleteAnnouncement(ann.id) }
                         )
                     }
                 }
             }
+        }
 
-         
-            if (showDialog) {
-                CreateAnnouncementDialog(
-                    onDismiss = { showDialog = false },
-                    onCreate = { title, desc ->
-                        viewModel.createAnnouncement(title, desc)
-                        showDialog = false
-                    }
-                )
-            }
+        if (showDialog) {
+            CreateAnnouncementDialog(
+                onDismiss = { showDialog = false },
+                onCreate = { title, content ->
+                    viewModel.createAnnouncement(title, content)
+                    showDialog = false
+                }
+            )
         }
     }
 }
 
 @Composable
-fun AnnouncementCard(
-    announcement: Announcement,
-    onDelete: () -> Unit
+private fun CreateAnnouncementDialog(
+    onDismiss: () -> Unit,
+    onCreate: (title: String, content: String) -> Unit
 ) {
-    Card(
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .shadow(6.dp, RoundedCornerShape(12.dp))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    var title by remember { mutableStateOf("") }
+    var content by remember { mutableStateOf("") }
 
-            if (announcement.isImportant) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(Color.Red, Color(0xFFFFA500))
-                            )
-                        )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false),
+        title = { Text("Create Announcement") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Title") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    label = { Text("Content") },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onCreate(title.trim(), content.trim())
+                },
+                enabled = title.isNotBlank() && content.isNotBlank()
             ) {
-                Text(announcement.title, style = MaterialTheme.typography.titleMedium, fontSize = 17.sp)
-                if (announcement.isImportant) {
-                    Icon(Icons.Filled.Flag, contentDescription = "Important", tint = Color.Red)
-                }
+                Text("Create")
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(announcement.description, fontSize = 14.sp, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(formatDate(announcement.createdAt), fontSize = 12.sp, color = Color.Gray)
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = Color.Gray)
-                }
-            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         }
-    }
+    )
 }

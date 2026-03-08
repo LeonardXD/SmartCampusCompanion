@@ -6,5 +6,6 @@ data class Announcement(
     val content: String,
     val category: String,
     val isImportant: Boolean,
-    val createdAt: Long
+    val createdAt: Long,
+    val isRead: Boolean = false
 )

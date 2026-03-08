@@ -28,9 +28,15 @@ class TaskViewModel(
         }
     }
 
-    fun addTask(title: String, description: String) {
+    fun addTask(title: String, description: String, dueDate: Long?) {
         viewModelScope.launch {
-            repository.insertTask(Task(title = title, description = description))
+            repository.insertTask(
+                Task(
+                    title = title,
+                    description = description,
+                    dueDate = dueDate
+                )
+            )
         }
     }
 

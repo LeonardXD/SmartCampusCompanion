@@ -1,27 +1,44 @@
-package com.example.smartcampuscompanion.features.announcements.ui.components
+package com.example.smartcampuscompanion.features.announcements.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.material3.icons.Icons
-import androidx.compose.material3.icons.filled.Delete
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smartcampuscompanion.domain.model.Announcement
-import com.example.smartcampuscompanion.features.announcements.utils.CATEGORY_ICONS
 
 @Composable
 fun AnnouncementItem(
     announcement: Announcement,
+    onMarkAsRead: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val categoryInfo = CATEGORY_ICONS[announcement.category] ?: CATEGORY_ICONS["General"]!!
+    val categoryColor = when (announcement.category) {
+        "Academic" -> Color(0xFF1565C0)
+        "Events" -> Color(0xFF2E7D32)
+        "Admin" -> Color(0xFF6A1B9A)
+        else -> MaterialTheme.colorScheme.primary
+    }
 
     Card(
         modifier = Modifier
@@ -39,19 +56,14 @@ fun AnnouncementItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        if (announcement.isImportant) Brush.horizontalGradient(
-                            colors = listOf(Color.Red, Color(0xFFFFA500))
-                        ) else Color.Transparent,
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    .background(Color.Transparent, shape = RoundedCornerShape(12.dp))
                     .padding(6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = announcement.category,
-                    color = Color(categoryInfo.color),
+                    color = categoryColor,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(start = 6.dp)
                 )
@@ -82,7 +94,7 @@ fun AnnouncementItem(
 
           
             Text(
-                text = announcement.description,
+                text = announcement.content,
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
@@ -92,8 +104,31 @@ fun AnnouncementItem(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                if (!announcement.isRead) {
+                    TextButton(onClick = onMarkAsRead) {
+                        Icon(
+                            imageVector = Icons.Default.Done,
+                            contentDescription = "Mark as read",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Read",
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Read",
+                        color = Color(0xFF2E7D32),
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,
