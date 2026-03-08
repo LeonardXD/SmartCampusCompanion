@@ -17,6 +17,10 @@ class AnnouncementRepository(
         dao.insertAnnouncement(announcement.toEntity())
     }
 
+    suspend fun markAnnouncementAsRead(id: Long) {
+        dao.markAsRead(id)
+    }
+
     suspend fun deleteAnnouncement(announcement: Announcement) {
         dao.deleteAnnouncement(announcement.toEntity())
     }

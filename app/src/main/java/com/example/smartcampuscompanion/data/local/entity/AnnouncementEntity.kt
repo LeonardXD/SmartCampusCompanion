@@ -11,7 +11,8 @@ data class AnnouncementEntity(
     val content: String,
     val category: String,
     val isImportant: Boolean,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val isRead: Boolean = false
 )
 
 

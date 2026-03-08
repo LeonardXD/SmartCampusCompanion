@@ -13,6 +13,9 @@ interface AnnouncementDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAnnouncement(entity: AnnouncementEntity)
 
+    @Query("UPDATE announcements SET isRead = 1 WHERE id = :id")
+    suspend fun markAsRead(id: Long)
+
     @Delete
     suspend fun deleteAnnouncement(entity: AnnouncementEntity)
 }
