@@ -40,6 +40,7 @@ import com.example.smartcampuscompanion.core.ui.components.AppTopBar
 import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
 import com.example.smartcampuscompanion.di.AppModule
 import com.example.smartcampuscompanion.di.ViewModelFactory
+import com.example.smartcampuscompanion.features.auth.viewmodel.AuthEvent
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthUiState
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthViewModel
 
@@ -67,7 +68,7 @@ fun RegisterScreen(
     LaunchedEffect(authState) {
         if (authState is AuthUiState.Registered) {
             onRegisterSuccess()
-            authViewModel.clearTransientState()
+            authViewModel.onEvent(AuthEvent.ClearTransientState)
         }
     }
 
@@ -110,7 +111,7 @@ fun RegisterScreen(
                         value = username,
                         onValueChange = {
                             username = it
-                            authViewModel.clearTransientState()
+                            authViewModel.onEvent(AuthEvent.ClearTransientState)
                         },
                         label = { Text("Username") },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
@@ -124,7 +125,7 @@ fun RegisterScreen(
                         value = password,
                         onValueChange = {
                             password = it
-                            authViewModel.clearTransientState()
+                            authViewModel.onEvent(AuthEvent.ClearTransientState)
                         },
                         label = { Text("Password") },
                         singleLine = true,
@@ -155,7 +156,7 @@ fun RegisterScreen(
                         value = confirmPassword,
                         onValueChange = {
                             confirmPassword = it
-                            authViewModel.clearTransientState()
+                            authViewModel.onEvent(AuthEvent.ClearTransientState)
                         },
                         label = { Text("Confirm Password") },
                         singleLine = true,
@@ -194,10 +195,12 @@ fun RegisterScreen(
                     PrimaryButton(
                         text = if (isSubmitting) "Creating..." else "Create Account",
                         onClick = {
-                            authViewModel.register(
-                                username = username,
-                                password = password,
-                                confirmPassword = confirmPassword
+                            authViewModel.onEvent(
+                                AuthEvent.Register(
+                                    username = username,
+                                    password = password,
+                                    confirmPassword = confirmPassword
+                                )
                             )
                         },
                         enabled = username.isNotBlank() &&

@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.collectAsState
+import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementEvent
 import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementUiState
 import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementViewModel
 
@@ -117,8 +118,12 @@ fun AnnouncementScreen(
                     items(uiState.announcements, key = { it.id }) { ann ->
                         AnnouncementItem(
                             announcement = ann,
-                            onMarkAsRead = { viewModel.markAnnouncementRead(ann.id) },
-                            onDelete = { viewModel.deleteAnnouncement(ann.id) },
+                            onMarkAsRead = {
+                                viewModel.onEvent(AnnouncementEvent.MarkAnnouncementRead(ann.id))
+                            },
+                            onDelete = {
+                                viewModel.onEvent(AnnouncementEvent.DeleteAnnouncement(ann.id))
+                            },
                             canMarkAsRead = canMarkAsRead,
                             canDelete = canDelete
                         )
@@ -131,7 +136,7 @@ fun AnnouncementScreen(
             CreateAnnouncementDialog(
                 onDismiss = { showDialog = false },
                 onCreate = { title, content ->
-                    viewModel.createAnnouncement(title, content)
+                    viewModel.onEvent(AnnouncementEvent.CreateAnnouncement(title, content))
                     showDialog = false
                 }
             )

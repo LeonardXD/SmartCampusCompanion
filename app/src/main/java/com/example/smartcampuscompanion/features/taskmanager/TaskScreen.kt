@@ -50,9 +50,9 @@ fun TaskScreen(
             items(tasks) { task ->
                 TaskItem(
                     task = task,
-                    onToggleCompletion = { viewModel.toggleTaskCompletion(task) },
+                    onToggleCompletion = { viewModel.onEvent(TaskEvent.ToggleTaskCompletion(task)) },
                     onEdit = { editingTask = task },
-                    onDelete = { viewModel.deleteTask(task) }
+                    onDelete = { viewModel.onEvent(TaskEvent.DeleteTask(task)) }
                 )
             }
         }
@@ -61,7 +61,7 @@ fun TaskScreen(
             TaskFormDialog(
                 onDismiss = { showAddDialog = false },
                 onConfirm = { title, description, dueDate ->
-                    viewModel.addTask(title, description, dueDate)
+                    viewModel.onEvent(TaskEvent.AddTask(title, description, dueDate))
                     showAddDialog = false
                 }
             )
@@ -73,11 +73,13 @@ fun TaskScreen(
                 onDismiss = { editingTask = null },
                 onConfirm = { title, description, dueDate ->
                     editingTask?.let {
-                        viewModel.updateTask(
-                            it.copy(
-                                title = title,
-                                description = description,
-                                dueDate = dueDate
+                        viewModel.onEvent(
+                            TaskEvent.UpdateTask(
+                                it.copy(
+                                    title = title,
+                                    description = description,
+                                    dueDate = dueDate
+                                )
                             )
                         )
                     }

@@ -32,6 +32,19 @@ class TaskViewModel(
         getTasks()
     }
 
+    fun onEvent(event: TaskEvent) {
+        when (event) {
+            is TaskEvent.AddTask -> addTask(
+                title = event.title,
+                description = event.description,
+                dueDate = event.dueDate
+            )
+            is TaskEvent.UpdateTask -> updateTask(event.task)
+            is TaskEvent.DeleteTask -> deleteTask(event.task)
+            is TaskEvent.ToggleTaskCompletion -> toggleTaskCompletion(event.task)
+        }
+    }
+
     private fun getTasks() {
         viewModelScope.launch {
             _uiState.value = TaskUiState.Loading
@@ -48,7 +61,7 @@ class TaskViewModel(
         }
     }
 
-    fun addTask(title: String, description: String, dueDate: Long?) {
+    private fun addTask(title: String, description: String, dueDate: Long?) {
         viewModelScope.launch {
             try {
                 repository.insertTask(
@@ -71,7 +84,7 @@ class TaskViewModel(
         }
     }
 
-    fun updateTask(task: Task) {
+    private fun updateTask(task: Task) {
         viewModelScope.launch {
             try {
                 repository.updateTask(task)
@@ -87,7 +100,7 @@ class TaskViewModel(
         }
     }
 
-    fun deleteTask(task: Task) {
+    private fun deleteTask(task: Task) {
         viewModelScope.launch {
             try {
                 repository.deleteTask(task)
@@ -103,7 +116,7 @@ class TaskViewModel(
         }
     }
 
-    fun toggleTaskCompletion(task: Task) {
+    private fun toggleTaskCompletion(task: Task) {
         viewModelScope.launch {
             try {
                 repository.updateTask(task.copy(isCompleted = !task.isCompleted))

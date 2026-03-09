@@ -22,6 +22,17 @@ class AnnouncementViewModel(
         observeAnnouncements()
     }
 
+    fun onEvent(event: AnnouncementEvent) {
+        when (event) {
+            is AnnouncementEvent.CreateAnnouncement -> createAnnouncement(
+                title = event.title,
+                content = event.content
+            )
+            is AnnouncementEvent.DeleteAnnouncement -> deleteAnnouncement(event.id)
+            is AnnouncementEvent.MarkAnnouncementRead -> markAnnouncementRead(event.id)
+        }
+    }
+
     private fun observeAnnouncements() {
         viewModelScope.launch {
             repository.getAnnouncements()
@@ -40,7 +51,7 @@ class AnnouncementViewModel(
         }
     }
 
-    fun createAnnouncement(title: String, content: String) {
+    private fun createAnnouncement(title: String, content: String) {
         viewModelScope.launch {
             try {
                 val announcement = Announcement(
@@ -65,7 +76,7 @@ class AnnouncementViewModel(
         }
     }
 
-    fun deleteAnnouncement(id: Long) {
+    private fun deleteAnnouncement(id: Long) {
         viewModelScope.launch {
             val current = (_uiState.value as? AnnouncementUiState.Success)?.announcements ?: return@launch
             val target = current.firstOrNull { it.id == id } ?: return@launch
@@ -83,7 +94,7 @@ class AnnouncementViewModel(
         }
     }
 
-    fun markAnnouncementRead(id: Long) {
+    private fun markAnnouncementRead(id: Long) {
         viewModelScope.launch {
             try {
                 repository.markAnnouncementAsRead(id)

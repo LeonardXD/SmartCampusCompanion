@@ -15,6 +15,7 @@ import com.example.smartcampuscompanion.features.auth.ui.LoginScreen
 import com.example.smartcampuscompanion.features.announcements.ui.AnnouncementScreen
 import com.example.smartcampuscompanion.features.announcements.viewmodel.AnnouncementViewModel
 import com.example.smartcampuscompanion.features.campusinfo.ui.CampusInfoScreen
+import com.example.smartcampuscompanion.features.campusinfo.viewmodel.CampusInfoViewModel
 import com.example.smartcampuscompanion.features.dashboard.ui.DashboardScreen
 import com.example.smartcampuscompanion.features.auth.data.SessionManager
 import com.example.smartcampuscompanion.features.settings.ui.SettingsScreen
@@ -81,7 +82,8 @@ fun NavGraph(
 
         // Campus Info Route
         composable(AppRoutes.CAMPUS_INFO) {
-            CampusInfoScreen()
+            val campusInfoViewModel: CampusInfoViewModel = viewModel()
+            CampusInfoScreen(viewModel = campusInfoViewModel)
         }
 
         composable(AppRoutes.TASKS) {

@@ -17,7 +17,23 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun login(username: String, password: String, isAdminLogin: Boolean) {
+    fun onEvent(event: AuthEvent) {
+        when (event) {
+            is AuthEvent.Login -> login(
+                username = event.username,
+                password = event.password,
+                isAdminLogin = event.isAdminLogin
+            )
+            is AuthEvent.Register -> register(
+                username = event.username,
+                password = event.password,
+                confirmPassword = event.confirmPassword
+            )
+            AuthEvent.ClearTransientState -> clearTransientState()
+        }
+    }
+
+    private fun login(username: String, password: String, isAdminLogin: Boolean) {
         if (username.isBlank() || password.isBlank()) {
             _uiState.value = AuthUiState.Error("Username and password are required.")
             return
@@ -56,7 +72,7 @@ class AuthViewModel(
         }
     }
 
-    fun register(username: String, password: String, confirmPassword: String) {
+    private fun register(username: String, password: String, confirmPassword: String) {
         if (password != confirmPassword) {
             _uiState.value = AuthUiState.Error("Passwords do not match.")
             return
@@ -86,7 +102,7 @@ class AuthViewModel(
         }
     }
 
-    fun clearTransientState() {
+    private fun clearTransientState() {
         _uiState.value = AuthUiState.Idle
     }
 }

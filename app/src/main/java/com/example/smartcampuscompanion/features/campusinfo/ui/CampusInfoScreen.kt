@@ -6,13 +6,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.smartcampuscompanion.data.static.CampusData
 import com.example.smartcampuscompanion.core.ui.components.AppTopBar
+import com.example.smartcampuscompanion.features.campusinfo.viewmodel.CampusInfoEvent
+import com.example.smartcampuscompanion.features.campusinfo.viewmodel.CampusInfoUiState
+import com.example.smartcampuscompanion.features.campusinfo.viewmodel.CampusInfoViewModel
 
 @Composable
-fun CampusInfoScreen(onBack: (() -> Unit)? = null) {
+fun CampusInfoScreen(
+    viewModel: CampusInfoViewModel,
+    onBack: (() -> Unit)? = null
+) {
+    val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(CampusInfoEvent.LoadDepartments)
+    }
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -26,7 +40,8 @@ fun CampusInfoScreen(onBack: (() -> Unit)? = null) {
             contentPadding = PaddingValues(16.dp),
             modifier = Modifier.padding(padding)
         ) {
-            items(CampusData.departments) { department ->
+            val departments = (state as? CampusInfoUiState.Success)?.departments.orEmpty()
+            items(departments) { department ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()

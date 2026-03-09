@@ -48,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
 import com.example.smartcampuscompanion.di.AppModule
 import com.example.smartcampuscompanion.di.ViewModelFactory
+import com.example.smartcampuscompanion.features.auth.viewmodel.AuthEvent
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthUiState
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthViewModel
 
@@ -75,7 +76,7 @@ fun LoginScreen(
         val state = authState
         if (state is AuthUiState.Authenticated) {
             onLoginSuccess(state.username)
-            authViewModel.clearTransientState()
+            authViewModel.onEvent(AuthEvent.ClearTransientState)
         }
     }
 
@@ -130,7 +131,7 @@ fun LoginScreen(
                             selected = selectedRole == LoginRole.Student,
                             onClick = {
                                 selectedRole = LoginRole.Student
-                                authViewModel.clearTransientState()
+                                authViewModel.onEvent(AuthEvent.ClearTransientState)
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -140,7 +141,7 @@ fun LoginScreen(
                             selected = selectedRole == LoginRole.Admin,
                             onClick = {
                                 selectedRole = LoginRole.Admin
-                                authViewModel.clearTransientState()
+                                authViewModel.onEvent(AuthEvent.ClearTransientState)
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -150,7 +151,7 @@ fun LoginScreen(
                         value = username,
                         onValueChange = {
                             username = it
-                            authViewModel.clearTransientState()
+                            authViewModel.onEvent(AuthEvent.ClearTransientState)
                         },
                         label = { Text("Username") },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
@@ -162,7 +163,7 @@ fun LoginScreen(
                         value = password,
                         onValueChange = {
                             password = it
-                            authViewModel.clearTransientState()
+                            authViewModel.onEvent(AuthEvent.ClearTransientState)
                         },
                         label = { Text("Password") },
                         visualTransformation = if (isPasswordVisible) {
@@ -225,10 +226,12 @@ fun LoginScreen(
                                 "Admin Login"
                             },
                             onClick = {
-                                authViewModel.login(
-                                    username = username,
-                                    password = password,
-                                    isAdminLogin = selectedRole == LoginRole.Admin
+                                authViewModel.onEvent(
+                                    AuthEvent.Login(
+                                        username = username,
+                                        password = password,
+                                        isAdminLogin = selectedRole == LoginRole.Admin
+                                    )
                                 )
                             },
                             enabled = username.isNotBlank() && password.isNotBlank() && !isLoading
