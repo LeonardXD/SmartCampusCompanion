@@ -28,11 +28,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,11 +44,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
-import com.example.smartcampuscompanion.core.utils.Constants
 import com.example.smartcampuscompanion.di.AppModule
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.smartcampuscompanion.di.ViewModelFactory
+import com.example.smartcampuscompanion.features.auth.viewmodel.AuthUiState
+import com.example.smartcampuscompanion.features.auth.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
@@ -58,14 +60,24 @@ fun LoginScreen(
     val database = remember(context) { AppModule.provideDatabase(context) }
     val userDao = remember(database) { AppModule.provideUserDao(database) }
     val userRepository = remember(userDao) { AppModule.provideUserRepository(userDao) }
-    val scope = rememberCoroutineScope()
+    val factory = remember(userRepository) { ViewModelFactory { AuthViewModel(userRepository) } }
+    val authViewModel: AuthViewModel = viewModel(factory = factory)
+    val authState by authViewModel.uiState.collectAsState()
 
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    var isLoading by rememberSaveable { mutableStateOf(false) }
-    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
     var selectedRole by rememberSaveable { mutableStateOf(LoginRole.Student) }
+    val isLoading = authState is AuthUiState.Loading
+    val errorMessage = (authState as? AuthUiState.Error)?.message
+
+    LaunchedEffect(authState) {
+        val state = authState
+        if (state is AuthUiState.Authenticated) {
+            onLoginSuccess(state.username)
+            authViewModel.clearTransientState()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -118,7 +130,7 @@ fun LoginScreen(
                             selected = selectedRole == LoginRole.Student,
                             onClick = {
                                 selectedRole = LoginRole.Student
-                                errorMessage = null
+                                authViewModel.clearTransientState()
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -128,7 +140,7 @@ fun LoginScreen(
                             selected = selectedRole == LoginRole.Admin,
                             onClick = {
                                 selectedRole = LoginRole.Admin
-                                errorMessage = null
+                                authViewModel.clearTransientState()
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -138,7 +150,7 @@ fun LoginScreen(
                         value = username,
                         onValueChange = {
                             username = it
-                            errorMessage = null
+                            authViewModel.clearTransientState()
                         },
                         label = { Text("Username") },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
@@ -150,7 +162,7 @@ fun LoginScreen(
                         value = password,
                         onValueChange = {
                             password = it
-                            errorMessage = null
+                            authViewModel.clearTransientState()
                         },
                         label = { Text("Password") },
                         visualTransformation = if (isPasswordVisible) {
@@ -179,9 +191,9 @@ fun LoginScreen(
                         }
                     )
 
-                    if (errorMessage != null) {
+                    if (!errorMessage.isNullOrBlank()) {
                         Text(
-                            text = errorMessage!!,
+                            text = errorMessage,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -213,34 +225,13 @@ fun LoginScreen(
                                 "Admin Login"
                             },
                             onClick = {
-                                scope.launch {
-                                    isLoading = true
-                                    delay(1000)
-
-                                    val isValid = when (selectedRole) {
-                                        LoginRole.Student -> {
-                                            userRepository.authenticateStudent(username, password)
-                                        }
-
-                                        LoginRole.Admin -> {
-                                            username == Constants.ADMIN_USERNAME &&
-                                                password == Constants.ADMIN_PASSWORD
-                                        }
-                                    }
-
-                                    if (isValid) {
-                                        onLoginSuccess(username)
-                                    } else {
-                                        errorMessage = if (selectedRole == LoginRole.Student) {
-                                            "Invalid student credentials"
-                                        } else {
-                                            "Invalid admin credentials"
-                                        }
-                                        isLoading = false
-                                    }
-                                }
+                                authViewModel.login(
+                                    username = username,
+                                    password = password,
+                                    isAdminLogin = selectedRole == LoginRole.Admin
+                                )
                             },
-                            enabled = username.isNotBlank() && password.isNotBlank()
+                            enabled = username.isNotBlank() && password.isNotBlank() && !isLoading
                         )
                     }
                 }

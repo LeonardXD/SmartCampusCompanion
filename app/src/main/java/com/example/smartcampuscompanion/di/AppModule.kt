@@ -12,14 +12,21 @@ import com.example.smartcampuscompanion.data.repository.UserRepository
 import com.example.smartcampuscompanion.domain.repository.TaskRepository
 
 object AppModule {
-    fun provideDatabase(context: Context): AppDatabase =
-        Room.databaseBuilder(
-            context.applicationContext,
-            AppDatabase::class.java,
-            "smart_campus_database"
-        )
-            .fallbackToDestructiveMigration()
-            .build()
+    @Volatile
+    private var databaseInstance: AppDatabase? = null
+
+    fun provideDatabase(context: Context): AppDatabase {
+        return databaseInstance ?: synchronized(this) {
+            databaseInstance ?: Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                "smart_campus_database"
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+                .also { databaseInstance = it }
+        }
+    }
 
     fun provideAnnouncementDao(database: AppDatabase): AnnouncementDao = database.announcementDao()
     fun provideTaskDao(database: AppDatabase): TaskDao = database.taskDao()

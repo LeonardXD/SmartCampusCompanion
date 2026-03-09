@@ -1,5 +1,6 @@
 package com.example.smartcampuscompanion.features.taskmanager
 
+import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smartcampuscompanion.domain.model.Task
@@ -7,7 +8,15 @@ import com.example.smartcampuscompanion.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+
+sealed interface TaskUiState {
+    data object Idle : TaskUiState
+    data object Loading : TaskUiState
+    data class Success(val tasks: List<Task>) : TaskUiState
+    data class Error(val message: String) : TaskUiState
+}
 
 class TaskViewModel(
     private val repository: TaskRepository,
@@ -16,6 +25,8 @@ class TaskViewModel(
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
+    private val _uiState = MutableStateFlow<TaskUiState>(TaskUiState.Loading)
+    val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
 
     init {
         getTasks()
@@ -23,40 +34,88 @@ class TaskViewModel(
 
     private fun getTasks() {
         viewModelScope.launch {
-            repository.getAllTasks(currentUsername).collect { taskList ->
-                _tasks.value = taskList
-            }
+            _uiState.value = TaskUiState.Loading
+            repository.getAllTasks(currentUsername)
+                .catch { e ->
+                    _uiState.value = TaskUiState.Error(
+                        e.message ?: "Unable to load tasks. Please try again."
+                    )
+                }
+                .collect { taskList ->
+                    _tasks.value = taskList
+                    _uiState.value = TaskUiState.Success(taskList)
+                }
         }
     }
 
     fun addTask(title: String, description: String, dueDate: Long?) {
         viewModelScope.launch {
-            repository.insertTask(
-                Task(
-                    ownerUsername = currentUsername,
-                    title = title,
-                    description = description,
-                    dueDate = dueDate
+            try {
+                repository.insertTask(
+                    Task(
+                        ownerUsername = currentUsername,
+                        title = title,
+                        description = description,
+                        dueDate = dueDate
+                    )
                 )
-            )
+            } catch (e: SQLiteException) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to add task. Please try again."
+                )
+            } catch (e: Exception) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to add task. Please try again."
+                )
+            }
         }
     }
 
     fun updateTask(task: Task) {
         viewModelScope.launch {
-            repository.updateTask(task)
+            try {
+                repository.updateTask(task)
+            } catch (e: SQLiteException) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to update task. Please try again."
+                )
+            } catch (e: Exception) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to update task. Please try again."
+                )
+            }
         }
     }
 
     fun deleteTask(task: Task) {
         viewModelScope.launch {
-            repository.deleteTask(task)
+            try {
+                repository.deleteTask(task)
+            } catch (e: SQLiteException) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to delete task. Please try again."
+                )
+            } catch (e: Exception) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to delete task. Please try again."
+                )
+            }
         }
     }
 
     fun toggleTaskCompletion(task: Task) {
         viewModelScope.launch {
-            repository.updateTask(task.copy(isCompleted = !task.isCompleted))
+            try {
+                repository.updateTask(task.copy(isCompleted = !task.isCompleted))
+            } catch (e: SQLiteException) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to update task status. Please try again."
+                )
+            } catch (e: Exception) {
+                _uiState.value = TaskUiState.Error(
+                    e.message ?: "Unable to update task status. Please try again."
+                )
+            }
         }
     }
 }
