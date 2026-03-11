@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smartcampuscompanion.core.ui.components.AppTopBar
 import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
+import com.example.smartcampuscompanion.core.ui.theme.AppElevation
+import com.example.smartcampuscompanion.core.ui.theme.AppSpacing
 import com.example.smartcampuscompanion.di.AppModule
 import com.example.smartcampuscompanion.di.ViewModelFactory
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthEvent
@@ -85,27 +87,28 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
+                .padding(AppSpacing.XXLarge),
             verticalArrangement = Arrangement.Center
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = AppElevation.Low),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
+                        .padding(AppSpacing.XLarge)
                 ) {
                     Text(
                         text = "Create your student account",
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(AppSpacing.Large))
 
                     OutlinedTextField(
                         value = username,
@@ -119,7 +122,7 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(AppSpacing.Medium))
 
                     OutlinedTextField(
                         value = password,
@@ -150,7 +153,7 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(AppSpacing.Medium))
 
                     OutlinedTextField(
                         value = confirmPassword,
@@ -186,11 +189,11 @@ fun RegisterScreen(
                             text = errorMessage,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 12.dp)
+                            modifier = Modifier.padding(top = AppSpacing.Medium)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(AppSpacing.Large))
 
                     PrimaryButton(
                         text = if (isSubmitting) "Creating..." else "Create Account",

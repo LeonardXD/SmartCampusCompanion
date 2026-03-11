@@ -10,4 +10,5 @@ object AppRoutes {
     const val TASK_MANAGER = TASKS
     const val ANNOUNCEMENTS = "announcements_screen"
     const val SETTINGS = "settings_screen"
+    const val ADMIN_PROFILE = "admin_profile_screen"
 }

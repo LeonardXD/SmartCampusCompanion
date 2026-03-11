@@ -21,6 +21,8 @@ class AnnouncementRepository(
         dao.markAsRead(id)
     }
 
+    fun getUnreadAnnouncementCount(): Flow<Int> = dao.getUnreadCount()
+
     suspend fun deleteAnnouncement(announcement: Announcement) {
         dao.deleteAnnouncement(announcement.toEntity())
     }

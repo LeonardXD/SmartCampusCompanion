@@ -23,6 +23,7 @@ import com.example.smartcampuscompanion.features.taskmanager.TaskScreen
 import com.example.smartcampuscompanion.features.taskmanager.TaskViewModel
 import com.example.smartcampuscompanion.features.auth.ui.RegisterScreen
 import com.example.smartcampuscompanion.core.utils.Constants
+import com.example.smartcampuscompanion.features.adminprofile.ui.AdminProfileScreen
 
 @Composable
 fun NavGraph(
@@ -68,15 +69,18 @@ fun NavGraph(
 
         // Dashboard Route
         composable(AppRoutes.HOME) {
+            val context = LocalContext.current
+            val database = remember(context) { AppModule.provideDatabase(context) }
+            val dao = remember(database) { AppModule.provideTaskDao(database) }
+            val repository = remember(dao) { AppModule.provideTaskRepository(dao) }
             val username = sessionManager.getUsername() ?: "Student"
+            val factory = remember(repository, username) {
+                ViewModelFactory { TaskViewModel(repository, username) }
+            }
+            val taskViewModel: TaskViewModel = viewModel(factory = factory)
             DashboardScreen(
                 username = username,
-                onLogout = {
-                    sessionManager.clearSession()
-                    navController.navigate(AppRoutes.LOGIN) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
+                taskViewModel = taskViewModel
             )
         }
 
@@ -112,21 +116,31 @@ fun NavGraph(
                 canCreate = isAdmin,
                 canMarkAsRead = !isAdmin,
                 canDelete = isAdmin,
-                onLogout = if (isAdmin) {
-                    {
-                        sessionManager.clearSession()
-                        navController.navigate(AppRoutes.LOGIN) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                onProfileClick = {
+                    if (isAdmin) {
+                        navController.navigate(AppRoutes.SETTINGS)
                     }
-                } else {
-                    null
+                }
+            )
+        }
+
+        composable(AppRoutes.ADMIN_PROFILE) {
+            AdminProfileScreen(
+                onSettingsClick = {
+                    navController.navigate(AppRoutes.SETTINGS)
                 }
             )
         }
 
         composable(AppRoutes.SETTINGS) {
-            SettingsScreen()
+            SettingsScreen(
+                onLogout = {
+                    sessionManager.clearSession()
+                    navController.navigate(AppRoutes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

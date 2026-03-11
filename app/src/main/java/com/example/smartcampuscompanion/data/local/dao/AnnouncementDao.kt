@@ -16,6 +16,9 @@ interface AnnouncementDao {
     @Query("UPDATE announcements SET isRead = 1 WHERE id = :id")
     suspend fun markAsRead(id: Long)
 
+    @Query("SELECT COUNT(*) FROM announcements WHERE isRead = 0")
+    fun getUnreadCount(): Flow<Int>
+
     @Delete
     suspend fun deleteAnnouncement(entity: AnnouncementEntity)
 }

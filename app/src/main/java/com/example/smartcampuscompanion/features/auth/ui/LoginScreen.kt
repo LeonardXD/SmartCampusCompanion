@@ -46,6 +46,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smartcampuscompanion.core.ui.components.PrimaryButton
+import com.example.smartcampuscompanion.core.ui.theme.AppElevation
+import com.example.smartcampuscompanion.core.ui.theme.AppSpacing
 import com.example.smartcampuscompanion.di.AppModule
 import com.example.smartcampuscompanion.di.ViewModelFactory
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthEvent
@@ -83,7 +85,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .padding(AppSpacing.XXLarge)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -94,27 +96,28 @@ fun LoginScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(AppSpacing.Small))
             Text(
                 text = "Sign in to access tasks, announcements, and campus information.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(AppSpacing.XXLarge))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = AppElevation.Low),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                        .padding(AppSpacing.XLarge),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium)
                 ) {
                     Text(
                         text = "Login As",
@@ -123,7 +126,7 @@ fun LoginScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium)
                     ) {
                         RoleChip(
                             text = "Student Login",
@@ -260,6 +263,7 @@ private fun RoleChip(
         modifier = modifier,
         selected = selected,
         onClick = onClick,
+        shape = MaterialTheme.shapes.medium,
         label = {
             Text(
                 text = text,

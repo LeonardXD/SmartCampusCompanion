@@ -1,6 +1,7 @@
 // smartcampuscompanion/ui/components/AppTopBar.kt
 package com.example.smartcampuscompanion.core.ui.components
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import com.example.smartcampuscompanion.core.ui.theme.AppSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,13 +23,15 @@ fun AppTopBar(
     actions: @Composable () -> Unit = {}
 ) {
     TopAppBar(
-        title = { Text(text = title) },
+        title = { Text(text = title, style = MaterialTheme.typography.titleLarge) },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            titleContentColor = MaterialTheme.colorScheme.onPrimary,
-            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-            actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface
         ),
+        windowInsets = WindowInsets(0, 0, 0, 0),
+        expandedHeight = AppSize.TopBarHeight,
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(onClick = navigateUp) {
