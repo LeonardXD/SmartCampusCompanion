@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.smartcampuscompanion.ui.theme.SmartCampusCompanionTheme
 
+/** Main entry point for the Smart Campus Companion application. */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// --- UI Components ---
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
