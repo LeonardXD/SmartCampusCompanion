@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Task;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class TaskController extends Controller
+{
+    // GET TASKS
+    public function index()
+    {
+        return response()->json(
+            Auth::user()->tasks
+        );
+    }
+
+    // CREATE TASK
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required',
+        ]);
+
+        $task = Auth::user()->tasks()->create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'status' => $request->status ?? 'pending'
+        ]);
+
+        return response()->json($task);
+    }
+
+    // UPDATE TASK
+    public function update(Request $request, $id)
+    {
+        $task = Auth::user()->tasks()->findOrFail($id);
+
+        $task->update($request->all());
+
+        return response()->json($task);
+    }
+
+    // DELETE TASK
+    public function destroy($id)
+    {
+        $task = Auth::user()->tasks()->findOrFail($id);
+
+        $task->delete();
+
+        return response()->json(['message' => 'Task deleted']);
+    }
+}
