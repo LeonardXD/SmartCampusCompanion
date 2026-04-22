@@ -13,4 +13,4 @@ class DepartmentController extends Controller
             Department::all()
         );
     }
-}
+}git
