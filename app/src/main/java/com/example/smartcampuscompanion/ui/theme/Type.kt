@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Material 3 Typography Scale for the Smart Campus Companion.
- * * Each style defines attributes like font family, weight, size, and line height.
+ * * Each style will define attributes like font family, weight, size, and line height.
  * You can reference these in your UI using: MaterialTheme.typography.bodyLarge
  */
 
