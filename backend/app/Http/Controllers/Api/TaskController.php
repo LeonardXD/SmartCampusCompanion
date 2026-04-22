@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    // GET TASKS
+    // GET TASKS (user only)
     public function index()
     {
         return response()->json(
@@ -21,7 +21,9 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string'
         ]);
 
         $task = Auth::user()->tasks()->create([
@@ -36,6 +38,12 @@ class TaskController extends Controller
     // UPDATE TASK
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string'
+        ]);
+
         $task = Auth::user()->tasks()->findOrFail($id);
 
         $task->update($request->all());
@@ -50,6 +58,9 @@ class TaskController extends Controller
 
         $task->delete();
 
-        return response()->json(['message' => 'Task deleted']);
+        return response()->json([
+            'message' => 'Task deleted successfully'
+        ]);
     }
 }
+        
