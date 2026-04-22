@@ -1,19 +1,17 @@
-package com.example.app.di
+package com.example.smartcampuscompanion.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.app.repository.UserRepository
-import com.example.app.ui.UserViewModel
 
-class ViewModelFactory(
-    private val userRepository: UserRepository
+class ViewModelFactory<T : ViewModel>(
+    private val creator: () -> T
 ) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return UserViewModel(userRepository) as T
+    override fun <VM : ViewModel> create(modelClass: Class<VM>): VM {
+        val viewModel = creator()
+        if (!modelClass.isAssignableFrom(viewModel::class.java)) {
+            throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
+        @Suppress("UNCHECKED_CAST")
+        return viewModel as VM
     }
 }
