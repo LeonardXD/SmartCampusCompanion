@@ -11,7 +11,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-/** * Color Palette for Dark Mode
+/** * This is for Color Palette for Dark Mode
  */
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
