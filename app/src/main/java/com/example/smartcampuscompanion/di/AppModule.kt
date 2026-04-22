@@ -1,10 +1,10 @@
-package com.example.app.di
+package com.example.smartcampuscompanion.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.app.data.AppDatabase
-import com.example.app.data.UserDao
-import com.example.app.repository.UserRepository
+import com.example.smartcampuscompanion.data.AppDatabase
+import com.example.smartcampuscompanion.data.UserDao
+import com.example.smartcampuscompanion.repository.UserRepository
 
 object AppModule {
 
