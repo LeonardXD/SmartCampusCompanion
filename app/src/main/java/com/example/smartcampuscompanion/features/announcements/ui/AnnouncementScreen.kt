@@ -162,8 +162,8 @@ fun AnnouncementScreen(
         if (showDialog && canCreate) {
             CreateAnnouncementDialog(
                 onDismiss = { showDialog = false },
-                onCreate = { title, content ->
-                    viewModel.onEvent(AnnouncementEvent.CreateAnnouncement(title, content))
+                onCreate = { title, content, category ->
+                    viewModel.onEvent(AnnouncementEvent.CreateAnnouncement(title, content, category))
                     showDialog = false
                 }
             )
@@ -175,7 +175,7 @@ fun AnnouncementScreen(
 @Composable
 private fun CreateAnnouncementDialog(
     onDismiss: () -> Unit,
-    onCreate: (title: String, content: String) -> Unit
+    onCreate: (title: String, content: String, category: String) -> Unit
 ) {
     val categories = listOf("General", "Events", "Academic", "Facilities", "Emergency")
     var title by remember { mutableStateOf("") }
@@ -293,7 +293,8 @@ private fun CreateAnnouncementDialog(
                         val category = selectedCategory ?: return@Button
                         onCreate(
                             "[$category] ${title.trim()}",
-                            content.text.trim()
+                            content.text.trim(),
+                            category
                         )
                     },
                     enabled = canPost,

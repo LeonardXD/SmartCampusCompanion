@@ -1,6 +1,5 @@
 package com.example.smartcampuscompanion.features.announcements.viewmodel
 
-import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smartcampuscompanion.data.repository.AnnouncementRepository
@@ -26,7 +25,8 @@ class AnnouncementViewModel(
         when (event) {
             is AnnouncementEvent.CreateAnnouncement -> createAnnouncement(
                 title = event.title,
-                content = event.content
+                content = event.content,
+                category = event.category
             )
             is AnnouncementEvent.DeleteAnnouncement -> deleteAnnouncement(event.id)
             is AnnouncementEvent.MarkAnnouncementRead -> markAnnouncementRead(event.id)
@@ -51,23 +51,19 @@ class AnnouncementViewModel(
         }
     }
 
-    private fun createAnnouncement(title: String, content: String) {
+    private fun createAnnouncement(title: String, content: String, category: String) {
         viewModelScope.launch {
             try {
                 val announcement = Announcement(
                     id = 0L,
                     title = title,
                     content = content,
-                    category = "General",
+                    category = category,
                     isImportant = false,
                     createdAt = System.currentTimeMillis(),
                     isRead = false
                 )
                 repository.addAnnouncement(announcement)
-            } catch (e: SQLiteException) {
-                _uiState.value = AnnouncementUiState.Error(
-                    e.message ?: "Failed to create announcement"
-                )
             } catch (e: Exception) {
                 _uiState.value = AnnouncementUiState.Error(
                     e.message ?: "Failed to create announcement"
@@ -82,10 +78,6 @@ class AnnouncementViewModel(
             val target = current.firstOrNull { it.id == id } ?: return@launch
             try {
                 repository.deleteAnnouncement(target)
-            } catch (e: SQLiteException) {
-                _uiState.value = AnnouncementUiState.Error(
-                    e.message ?: "Failed to delete announcement"
-                )
             } catch (e: Exception) {
                 _uiState.value = AnnouncementUiState.Error(
                     e.message ?: "Failed to delete announcement"
@@ -98,10 +90,6 @@ class AnnouncementViewModel(
         viewModelScope.launch {
             try {
                 repository.markAnnouncementAsRead(id)
-            } catch (e: SQLiteException) {
-                _uiState.value = AnnouncementUiState.Error(
-                    e.message ?: "Failed to mark announcement as read"
-                )
             } catch (e: Exception) {
                 _uiState.value = AnnouncementUiState.Error(
                     e.message ?: "Failed to mark announcement as read"
