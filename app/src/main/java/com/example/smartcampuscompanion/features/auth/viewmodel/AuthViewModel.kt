@@ -1,9 +1,7 @@
 package com.example.smartcampuscompanion.features.auth.viewmodel
 
-import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.smartcampuscompanion.core.utils.Constants
 import com.example.smartcampuscompanion.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,28 +40,23 @@ class AuthViewModel(
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
             try {
-                val isValid = if (isAdminLogin) {
-                    username == Constants.ADMIN_USERNAME &&
-                        password == Constants.ADMIN_PASSWORD
-                } else {
-                    userRepository.authenticateStudent(username, password)
-                }
-
-                _uiState.value = if (isValid) {
-                    AuthUiState.Authenticated(username)
-                } else {
-                    AuthUiState.Error(
-                        if (isAdminLogin) {
-                            "Invalid admin credentials"
+                when (val result = userRepository.login(username, password)) {
+                    is UserRepository.LoginResult.Success -> {
+                        if (isAdminLogin && result.role != "Admin") {
+                            _uiState.value = AuthUiState.Error("This account is not an admin account.")
+                        } else if (!isAdminLogin && result.role == "Admin") {
+                            _uiState.value = AuthUiState.Error("Use Admin Login for admin accounts.")
                         } else {
-                            "Invalid student credentials"
+                            _uiState.value = AuthUiState.Authenticated(
+                                username = result.username,
+                                role = result.role
+                            )
                         }
-                    )
+                    }
+                    is UserRepository.LoginResult.Error -> {
+                        _uiState.value = AuthUiState.Error(result.message)
+                    }
                 }
-            } catch (e: SQLiteException) {
-                _uiState.value = AuthUiState.Error(
-                    e.message ?: "Unable to login right now. Please try again."
-                )
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(
                     e.message ?: "Unable to login right now. Please try again."
@@ -90,10 +83,6 @@ class AuthViewModel(
                         _uiState.value = AuthUiState.Error(result.message)
                     }
                 }
-            } catch (e: SQLiteException) {
-                _uiState.value = AuthUiState.Error(
-                    e.message ?: "Unable to register right now. Please try again."
-                )
             } catch (e: Exception) {
                 _uiState.value = AuthUiState.Error(
                     e.message ?: "Unable to register right now. Please try again."

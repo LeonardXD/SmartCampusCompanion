@@ -42,6 +42,7 @@ import com.example.smartcampuscompanion.core.ui.theme.AppElevation
 import com.example.smartcampuscompanion.core.ui.theme.AppSpacing
 import com.example.smartcampuscompanion.di.AppModule
 import com.example.smartcampuscompanion.di.ViewModelFactory
+import com.example.smartcampuscompanion.features.auth.data.SessionManager
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthEvent
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthUiState
 import com.example.smartcampuscompanion.features.auth.viewmodel.AuthViewModel
@@ -52,9 +53,11 @@ fun RegisterScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val database = remember(context) { AppModule.provideDatabase(context) }
-    val userDao = remember(database) { AppModule.provideUserDao(database) }
-    val userRepository = remember(userDao) { AppModule.provideUserRepository(userDao) }
+    val sessionManager = remember(context) { SessionManager(context) }
+    val api = remember(sessionManager) { AppModule.provideApiService(sessionManager) }
+    val userRepository = remember(api, sessionManager) {
+        AppModule.provideUserRepository(api, sessionManager)
+    }
     val factory = remember(userRepository) { ViewModelFactory { AuthViewModel(userRepository) } }
     val authViewModel: AuthViewModel = viewModel(factory = factory)
     val authState by authViewModel.uiState.collectAsState()
