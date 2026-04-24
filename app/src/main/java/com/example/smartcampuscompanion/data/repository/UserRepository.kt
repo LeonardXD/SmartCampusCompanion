@@ -1,16 +1,45 @@
 package com.example.smartcampuscompanion.data.repository
 
-import android.database.sqlite.SQLiteConstraintException
-import com.example.smartcampuscompanion.core.utils.Constants
-import com.example.smartcampuscompanion.data.local.dao.UserDao
-import com.example.smartcampuscompanion.data.local.entity.UserEntity
+import com.example.smartcampuscompanion.data.remote.CampusApiService
+import com.example.smartcampuscompanion.data.remote.dto.LoginRequestDto
+import com.example.smartcampuscompanion.data.remote.dto.RegisterRequestDto
+import com.example.smartcampuscompanion.features.auth.data.SessionManager
+import retrofit2.HttpException
 
 class UserRepository(
-    private val dao: UserDao
+    private val api: CampusApiService,
+    private val sessionManager: SessionManager
 ) {
-    suspend fun authenticateStudent(username: String, password: String): Boolean {
-        val user = dao.getUserByUsernameAndRole(username = username, role = STUDENT_ROLE)
-        return user?.password == password
+    suspend fun login(identifier: String, password: String): LoginResult {
+        return try {
+            val response = api.login(
+                LoginRequestDto(
+                    identifier = identifier.trim(),
+                    password = password
+                )
+            )
+            val username = response.user.username ?: response.user.email
+            val role = response.user.role ?: "Student"
+            sessionManager.saveSession(
+                username = username,
+                role = role,
+                token = response.token,
+                userId = response.user.id
+            )
+            LoginResult.Success(
+                username = username,
+                role = role
+            )
+        } catch (e: HttpException) {
+            val message = if (e.code() == 401) {
+                "Invalid credentials. Please check your username and password."
+            } else {
+                e.message()
+            }
+            LoginResult.Error(message)
+        } catch (e: Exception) {
+            LoginResult.Error(e.message ?: "Unable to login right now. Please try again.")
+        }
     }
 
     suspend fun registerStudent(username: String, password: String): RegisterResult {
@@ -18,24 +47,43 @@ class UserRepository(
         if (sanitizedUsername.isBlank() || password.isBlank()) {
             return RegisterResult.Error("Username and password are required.")
         }
-        if (sanitizedUsername.equals(Constants.ADMIN_USERNAME, ignoreCase = true)) {
-            return RegisterResult.Error("This username is reserved.")
-        }
 
         return try {
-            dao.insertUser(
-                UserEntity(
+            val sanitizedEmail = "${sanitizedUsername.lowercase()}@smartcampus.local"
+            api.register(
+                RegisterRequestDto(
+                    name = sanitizedUsername,
                     username = sanitizedUsername,
+                    email = sanitizedEmail,
                     password = password,
                     role = STUDENT_ROLE
                 )
             )
             RegisterResult.Success
-        } catch (_: SQLiteConstraintException) {
-            RegisterResult.Error("Username already exists.")
-        } catch (_: IllegalStateException) {
-            RegisterResult.Error("Username already exists.")
+        } catch (e: HttpException) {
+            RegisterResult.Error(
+                e.message() ?: "Unable to register right now. Please try again."
+            )
+        } catch (e: Exception) {
+            RegisterResult.Error(
+                e.message ?: "Unable to register right now. Please try again."
+            )
         }
+    }
+
+    suspend fun logout() {
+        try {
+            api.logout()
+        } catch (_: Exception) {
+            // Best effort logout.
+        } finally {
+            sessionManager.clearSession()
+        }
+    }
+
+    sealed class LoginResult {
+        data class Success(val username: String, val role: String) : LoginResult()
+        data class Error(val message: String) : LoginResult()
     }
 
     sealed class RegisterResult {
