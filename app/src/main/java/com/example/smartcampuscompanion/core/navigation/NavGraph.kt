@@ -4,7 +4,6 @@ package com.example.smartcampuscompanion.core.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,7 +21,7 @@ import com.example.smartcampuscompanion.features.settings.ui.SettingsScreen
 import com.example.smartcampuscompanion.features.taskmanager.TaskScreen
 import com.example.smartcampuscompanion.features.taskmanager.TaskViewModel
 import com.example.smartcampuscompanion.features.auth.ui.RegisterScreen
-import com.example.smartcampuscompanion.core.utils.Constants
+import com.example.smartcampuscompanion.data.repository.AnnouncementRepository
 import com.example.smartcampuscompanion.features.adminprofile.ui.AdminProfileScreen
 
 @Composable
@@ -30,6 +29,7 @@ fun NavGraph(
     navController: NavHostController,
     startDestination: String,
     sessionManager: SessionManager,
+    announcementRepository: AnnouncementRepository,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -40,9 +40,8 @@ fun NavGraph(
         // Login Route
         composable(AppRoutes.LOGIN) {
             LoginScreen(
-                onLoginSuccess = { username ->
-                    val role = if (username == Constants.ADMIN_USERNAME) "Admin" else "Student"
-                    sessionManager.saveSession(username, role)
+                onLoginSuccess = {
+                    val role = sessionManager.getRole() ?: "Student"
                     val destination = if (role == "Admin") {
                         AppRoutes.ANNOUNCEMENTS
                     } else {
@@ -69,10 +68,8 @@ fun NavGraph(
 
         // Dashboard Route
         composable(AppRoutes.HOME) {
-            val context = LocalContext.current
-            val database = remember(context) { AppModule.provideDatabase(context) }
-            val dao = remember(database) { AppModule.provideTaskDao(database) }
-            val repository = remember(dao) { AppModule.provideTaskRepository(dao) }
+            val api = remember(sessionManager) { AppModule.provideApiService(sessionManager) }
+            val repository = remember(api) { AppModule.provideTaskRepository(api) }
             val username = sessionManager.getUsername() ?: "Student"
             val factory = remember(repository, username) {
                 ViewModelFactory { TaskViewModel(repository, username) }
@@ -86,15 +83,18 @@ fun NavGraph(
 
         // Campus Info Route
         composable(AppRoutes.CAMPUS_INFO) {
-            val campusInfoViewModel: CampusInfoViewModel = viewModel()
+            val api = remember(sessionManager) { AppModule.provideApiService(sessionManager) }
+            val repository = remember(api) { AppModule.provideDepartmentRepository(api) }
+            val factory = remember(repository) {
+                ViewModelFactory { CampusInfoViewModel(repository) }
+            }
+            val campusInfoViewModel: CampusInfoViewModel = viewModel(factory = factory)
             CampusInfoScreen(viewModel = campusInfoViewModel)
         }
 
         composable(AppRoutes.TASKS) {
-            val context = LocalContext.current
-            val database = remember(context) { AppModule.provideDatabase(context) }
-            val dao = remember(database) { AppModule.provideTaskDao(database) }
-            val repository = remember(dao) { AppModule.provideTaskRepository(dao) }
+            val api = remember(sessionManager) { AppModule.provideApiService(sessionManager) }
+            val repository = remember(api) { AppModule.provideTaskRepository(api) }
             val username = sessionManager.getUsername() ?: ""
             val factory = remember(repository, username) {
                 ViewModelFactory { TaskViewModel(repository, username) }
@@ -104,11 +104,9 @@ fun NavGraph(
         }
 
         composable(AppRoutes.ANNOUNCEMENTS) {
-            val context = LocalContext.current
-            val database = remember(context) { AppModule.provideDatabase(context) }
-            val dao = remember(database) { AppModule.provideAnnouncementDao(database) }
-            val repository = remember(dao) { AppModule.provideAnnouncementRepository(dao) }
-            val factory = remember(repository) { ViewModelFactory { AnnouncementViewModel(repository) } }
+            val factory = remember(announcementRepository) {
+                ViewModelFactory { AnnouncementViewModel(announcementRepository) }
+            }
             val announcementViewModel: AnnouncementViewModel = viewModel(factory = factory)
             val isAdmin = sessionManager.getRole() == "Admin"
             AnnouncementScreen(
@@ -134,6 +132,7 @@ fun NavGraph(
 
         composable(AppRoutes.SETTINGS) {
             SettingsScreen(
+                sessionManager = sessionManager,
                 onLogout = {
                     sessionManager.clearSession()
                     navController.navigate(AppRoutes.LOGIN) {
