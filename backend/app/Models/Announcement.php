@@ -11,6 +11,14 @@ class Announcement extends Model
 
     protected $fillable = [
         'title',
-        'content'
+        'content',
+        'category',
+        'is_important',
+        'is_read',
+    ];
+
+    protected $casts = [
+        'is_important' => 'boolean',
+        'is_read' => 'boolean',
     ];
 }
