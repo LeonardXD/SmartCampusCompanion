@@ -23,13 +23,17 @@ class TaskController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'nullable|string'
+            'status' => 'nullable|string|max:255',
+            'is_completed' => 'nullable|boolean',
+            'due_date' => 'nullable|date',
         ]);
 
         $task = Auth::user()->tasks()->create([
             'title' => $request->title,
             'description' => $request->description,
-            'status' => $request->status ?? 'pending'
+            'status' => $request->status ?? 'pending',
+            'is_completed' => $request->boolean('is_completed', false),
+            'due_date' => $request->due_date,
         ]);
 
         return response()->json($task);
@@ -41,12 +45,20 @@ class TaskController extends Controller
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'nullable|string'
+            'status' => 'nullable|string|max:255',
+            'is_completed' => 'nullable|boolean',
+            'due_date' => 'nullable|date',
         ]);
 
         $task = Auth::user()->tasks()->findOrFail($id);
 
-        $task->update($request->all());
+        $task->update($request->only([
+            'title',
+            'description',
+            'status',
+            'is_completed',
+            'due_date',
+        ]));
 
         return response()->json($task);
     }

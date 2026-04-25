@@ -15,21 +15,26 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'nullable|string|max:255|unique:users,username',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'password' => 'required|min:6',
+            'role' => 'nullable|in:Student,Admin',
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'username' => $request->username,
             'email' => $request->email,
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
+            'role' => $request->role ?? 'Student',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'token' => $token
+            'token' => $token,
+            'token_type' => 'Bearer',
         ]);
     }
 
@@ -37,23 +42,46 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+            'identifier' => 'nullable|string',
+            'email' => 'nullable|email',
+            'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $identifier = $request->identifier ?? $request->email;
+        if (!$identifier) {
             return response()->json([
-                'message' => 'Invalid credentials'
+                'message' => 'Email or username is required',
+            ], 422);
+        }
+
+        $credentials = [
+            filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'username' => $identifier,
+            'password' => $request->password,
+        ];
+
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'message' => 'Invalid credentials',
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->first();
+        $user = Auth::user();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'token' => $token
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()?->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully',
         ]);
     }
 }

@@ -18,10 +18,15 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // TASK ROUTES (PROTECTED)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::post('/tasks', [TaskController::class, 'store']);
     Route::put('/tasks/{id}', [TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
+
+    // ANNOUNCEMENT PROTECTED ROUTES
+    Route::post('/announcements', [AnnouncementController::class, 'store']);
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
 });
 
 // INFORMATION ROUTES (PUBLIC READ ONLY)
