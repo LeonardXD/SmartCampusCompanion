@@ -1,6 +1,5 @@
 package com.example.smartcampuscompanion.features.taskmanager
 
-import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smartcampuscompanion.domain.model.Task
@@ -72,10 +71,7 @@ class TaskViewModel(
                         dueDate = dueDate
                     )
                 )
-            } catch (e: SQLiteException) {
-                _uiState.value = TaskUiState.Error(
-                    e.message ?: "Unable to add task. Please try again."
-                )
+                getTasks()
             } catch (e: Exception) {
                 _uiState.value = TaskUiState.Error(
                     e.message ?: "Unable to add task. Please try again."
@@ -88,10 +84,7 @@ class TaskViewModel(
         viewModelScope.launch {
             try {
                 repository.updateTask(task)
-            } catch (e: SQLiteException) {
-                _uiState.value = TaskUiState.Error(
-                    e.message ?: "Unable to update task. Please try again."
-                )
+                getTasks()
             } catch (e: Exception) {
                 _uiState.value = TaskUiState.Error(
                     e.message ?: "Unable to update task. Please try again."
@@ -104,10 +97,7 @@ class TaskViewModel(
         viewModelScope.launch {
             try {
                 repository.deleteTask(task)
-            } catch (e: SQLiteException) {
-                _uiState.value = TaskUiState.Error(
-                    e.message ?: "Unable to delete task. Please try again."
-                )
+                getTasks()
             } catch (e: Exception) {
                 _uiState.value = TaskUiState.Error(
                     e.message ?: "Unable to delete task. Please try again."
@@ -120,10 +110,7 @@ class TaskViewModel(
         viewModelScope.launch {
             try {
                 repository.updateTask(task.copy(isCompleted = !task.isCompleted))
-            } catch (e: SQLiteException) {
-                _uiState.value = TaskUiState.Error(
-                    e.message ?: "Unable to update task status. Please try again."
-                )
+                getTasks()
             } catch (e: Exception) {
                 _uiState.value = TaskUiState.Error(
                     e.message ?: "Unable to update task status. Please try again."

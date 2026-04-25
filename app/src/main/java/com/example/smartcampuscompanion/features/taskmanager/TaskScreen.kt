@@ -433,22 +433,31 @@ fun TaskFormDialog(
     var title by remember(initialTask?.id) { mutableStateOf(initialTask?.title ?: "") }
     var description by remember(initialTask?.id) { mutableStateOf(initialTask?.description ?: "") }
     var dueDateMillis by remember(initialTask?.id) { mutableStateOf(initialTask?.dueDate) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (initialTask == null) "Add New Task" else "Edit Task") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it },
+                    onValueChange = { title = it; errorMessage = null },
                     label = { Text("Title") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium
                 )
                 OutlinedTextField(
                     value = description,
-                    onValueChange = { description = it },
+                    onValueChange = { description = it; errorMessage = null },
                     label = { Text("Description") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium
@@ -460,8 +469,11 @@ fun TaskFormDialog(
                             context,
                             { _, year, month, dayOfMonth ->
                                 val selected = Calendar.getInstance().apply {
-                                    set(year, month, dayOfMonth)
+                                    set(Calendar.YEAR, year)
+                                    set(Calendar.MONTH, month)
+                                    set(Calendar.DAY_OF_MONTH, dayOfMonth)
                                 }
+                                
                                 val timePicker = TimePickerDialog(
                                     context,
                                     { _, hourOfDay, minute ->
@@ -469,7 +481,13 @@ fun TaskFormDialog(
                                         selected.set(Calendar.MINUTE, minute)
                                         selected.set(Calendar.SECOND, 0)
                                         selected.set(Calendar.MILLISECOND, 0)
-                                        dueDateMillis = selected.timeInMillis
+                                        
+                                        if (selected.before(Calendar.getInstance())) {
+                                            errorMessage = "Cannot select a past date or time"
+                                        } else {
+                                            dueDateMillis = selected.timeInMillis
+                                            errorMessage = null
+                                        }
                                     },
                                     now.get(Calendar.HOUR_OF_DAY),
                                     now.get(Calendar.MINUTE),
@@ -481,6 +499,7 @@ fun TaskFormDialog(
                             now.get(Calendar.MONTH),
                             now.get(Calendar.DAY_OF_MONTH)
                         )
+                        datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
                         datePicker.show()
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -498,9 +517,15 @@ fun TaskFormDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (title.isNotBlank()) {
-                        onConfirm(title, description, dueDateMillis)
+                    if (title.isBlank()) {
+                        errorMessage = "Title cannot be empty"
+                        return@TextButton
                     }
+                    if (dueDateMillis != null && dueDateMillis!! < System.currentTimeMillis()) {
+                        errorMessage = "Due date must be in the future"
+                        return@TextButton
+                    }
+                    onConfirm(title, description, dueDateMillis)
                 }
             ) {
                 Text(if (initialTask == null) "Add" else "Save")
